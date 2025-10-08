@@ -5,11 +5,11 @@ on: [push, workflow_dispatch]
 
 #Environment variables https://docs.github.com/en/actions/learn-github-actions/environment-variables
 env:
-  RESOURCE-GROUP: rg-eshoponweb-eastus
-  LOCATION: eastus
+  RESOURCE-GROUP: rg-eshoponweb-westeurope
+  LOCATION: westeurope
   TEMPLATE-FILE: infra/webapp.bicep
-  SUBSCRIPTION-ID: af6c947e-42e4-4c50-97de-9d914221fc35
-  WEBAPP-NAME: devops-webapp-eastus-1210610699
+  SUBSCRIPTION-ID: ${{ secrets.AZURE_SUBSCRIPTION_ID || '' }}
+  WEBAPP-NAME: devops-webapp-westeurope-300813916
 
 
 jobs:
@@ -27,10 +27,12 @@ jobs:
     #Build/Test/Publish the .net project
     - name: Build with dotnet
       run: dotnet build ./eShopOnWeb.sln --configuration Release
-    - name: Test (Unit)
-      run: dotnet test ./tests/UnitTests/UnitTests.csproj --configuration Release --no-build --verbosity normal
-    - name: Test (Integration)
-      run: dotnet test ./tests/IntegrationTests/IntegrationTests.csproj --configuration Release --no-build --verbosity normal
+      
+    - name: Test (Unit + Integration only)
+      run: |
+          dotnet test ./tests/UnitTests/UnitTests.csproj --configuration Release
+          dotnet test ./tests/IntegrationTests/IntegrationTests.csproj --configuration Release
+   
     - name: dotnet publish
       run: |
         dotnet publish ./src/Web/Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
